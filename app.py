@@ -1,5 +1,5 @@
 from aiogram import executor
-
+from aiogram import types
 from loader import dp,db
 import middlewares, filters, handlers
 from utils.notify_admins import on_startup_notify
@@ -11,11 +11,11 @@ async def on_startup(dispatcher):
     await set_default_commands(dispatcher)
     await db.create()
     await db.create_table_user()
+    await db.create_table_referal()
     await db.create_table_questions()
     await db.create_table_result()
     # Bot ishga tushgani haqida adminga xabar berish
     await on_startup_notify(dispatcher)
-    
 
 
 if __name__ == '__main__':

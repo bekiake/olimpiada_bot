@@ -46,7 +46,8 @@ class Database:
         id SERIAL PRIMARY KEY,
         fish VARCHAR(255) NOT NULL,
         tel VARCHAR(255) NOT NULL,
-        telegram_id VARCHAR(255) NOT NULL
+        telegram_id VARCHAR(255) NOT NULL,
+        referal_count INT DEFAULT 0
         );
         '''
         await self.execute(sql, execute = True)
@@ -75,6 +76,18 @@ class Database:
         );
         '''
         await self.execute(sql, execute=True)
+    
+    async def create_table_referal(self):
+        sql = '''
+        CREATE TABLE IF NOT EXISTS referals(
+            id SERIAL PRIMARY KEY,
+            user_id VARCHAR(255),
+            referal_user_id VARCHAR(255),
+            status BOOLEAN DEFAULT FALSE
+        );
+        '''
+        await self.execute(sql, execute=True)
+        
         
     
     
@@ -98,7 +111,7 @@ class Database:
     
     async def view_one_user(self):
         sql = '''
-        SELECT COUNT(*) FROM Foydalanuvchi
+        SELECT COUNT(*) FROM Users
         '''
         return await self.execute(sql, fetchval=True)
     
@@ -138,7 +151,24 @@ class Database:
         '''
         return await self.execute(sql, telegram_id, code, fetchrow=True)
     
+    async def add_ref_user(self, user_id,referal_user_id):
+        sql = '''
+        INSERT INTO referals(user_id, referal_user_id) VALUES($1,$2) RETURNING *
+        '''
+        return await self.execute(sql, user_id, referal_user_id, fetchrow=True)
     
+    async def check_ref_stats(self, status):
+        is_active = True
+        sql = '''
+        INSERT INTO referals(status) VALUES($1) RETURNING *
+        '''
+        return await self.execute(sql, is_active, execute=True)
+    
+    async def count_ref(self,user_id):
+        sql = '''
+        SELECT COUNT(*) FROM referals WHERE user_id = $1 and status = True;
+        '''
+        return await self.execute(sql, user_id, fetchrow=True)
     
 
     

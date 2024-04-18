@@ -22,6 +22,7 @@ async def get_olimpics_code(message: types.Message, state : FSMContext):
     exists_code = await db.check_code(int(message.text))
     if exists_code:
         await message.answer("This code is already used !\nTry another code:")
+        await OlimpicsDataState.code.set()
     code = int(message.text)
     
     await state.update_data(

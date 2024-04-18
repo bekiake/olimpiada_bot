@@ -60,7 +60,6 @@ async def check_test(message:types.Message, state : FSMContext):
     t_answers = await db.get_true_answers(int(data.get('code')))
     test_answer = t_answers.get('true_answers')
     user_answer = data.get('user_answer')
-    print(user_answer)
     
     if len(test_answer) >= len(user_answer):
         trues=0
