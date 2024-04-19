@@ -71,8 +71,7 @@ class Database:
             true_answers VARCHAR(255) NOT NULL,
             code INT NOT NULL UNIQUE,
             time_start TIMESTAMP NOT NULL,
-            time_end TIMESTAMP NOT NULL,
-            status BOOLEAN DEFAULT FALSE
+            time_end TIMESTAMP NOT NULL
         );
         '''
         await self.execute(sql, execute=True)
@@ -81,8 +80,8 @@ class Database:
         sql = '''
         CREATE TABLE IF NOT EXISTS referals(
             id SERIAL PRIMARY KEY,
-            user_id VARCHAR(255),
-            referal_user_id VARCHAR(255),
+            user_id VARCHAR(255) NOT NULL,
+            referal_user_id VARCHAR(255) NOT NULL UNIQUE,
             status BOOLEAN DEFAULT FALSE
         );
         '''
@@ -126,16 +125,14 @@ class Database:
         '''
         return await self.execute(sql,code, fetchrow=True)
     
-    async def add_olimpics(self,code,true_answers, time_start, time_end,time):
-        current_time = time
-        is_active = time_start <= current_time <= time_end
+    async def add_olimpics(self,code,true_answers, time_start, time_end):
         sql = '''
-        INSERT INTO olimpics(true_answers, code, time_start, time_end, status) VALUES($1,$2,$3,$4,$5) RETURNING *
+        INSERT INTO olimpics(true_answers, code, time_start, time_end) VALUES($1,$2,$3,$4) RETURNING *
         '''
-        return await self.execute(sql, true_answers, code, time_start, time_end, is_active, execute=True)
+        return await self.execute(sql, true_answers, code, time_start, time_end, execute=True)
     async def check_status(self, code):
         sql = '''
-        SELECT status FROM olimpics WHERE code = $1;
+        SELECT time_start, time_end FROM olimpics WHERE code = $1;
         '''
         return await self.execute(sql, code, fetchrow=True)
     
@@ -157,18 +154,17 @@ class Database:
         '''
         return await self.execute(sql, user_id, referal_user_id, fetchrow=True)
     
-    async def check_ref_stats(self, status):
-        is_active = True
-        sql = '''
-        INSERT INTO referals(status) VALUES($1) RETURNING *
-        '''
-        return await self.execute(sql, is_active, execute=True)
-    
     async def count_ref(self,user_id):
         sql = '''
         SELECT COUNT(*) FROM referals WHERE user_id = $1 and status = True;
         '''
         return await self.execute(sql, user_id, fetchrow=True)
+    
+    async def update_ref_status(self,referal_user_id):
+        sql = '''
+        UPDATE referals SET status=True WHERE referal_user_id=$1'''
+        return await self.execute(sql, referal_user_id, fetchval=True)
+    
     
 
     

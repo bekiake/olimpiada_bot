@@ -6,28 +6,30 @@ from aiogram.types import InlineKeyboardButton,InlineKeyboardMarkup
 from data.config import CHANNEL
 from utils.misc.check_member import check
 from loader import bot,db
-
+import re
 
 class CheckMemberMiddleware(BaseMiddleware):
     async def on_pre_process_update(self, update: types.Update, data:dict):
-        try:
-            ref_id = str(update.message.text)[7:]
-            client_id = str(update.message.from_user.id)
-            user_status = await db.cheak_user(ref_id)
-            ch = CHANNEL[0]
-            if not user_status:
-                await db.add_ref_user(user_id=ref_id,referal_user_id=client_id)
-                client_stats = await check(user_id=client_id,channel=ch)
-                if client_stats:
-                    await db.check_ref_stats(True)
-                else:
-                    await bot.send_message(chat_id=client_id,text="Siz allaqachon ro'yxatdan o'tgansiz")
-        except Exception as e:
-            print(e)
+        start = r"^\/start\s+(\d+)$"
+        
         if update.message:
             user = update.message.from_user.id
-            # if update.message.text in ['/start','/help']:
-            #     return
+            if update.message.text:
+                user_check = await db.cheak_user(str(user))    
+
+                   
+                if not user_check:
+                    try:
+                        if len(update.message.text[7:])!=0:
+                            await db.add_ref_user(user_id=update.message.text[7:],referal_user_id=str(user))
+                    except Exception as e:
+                        print(str(e)) 
+            
+            if await db.cheak_user(str(user)) is None:
+                return
+            
+            # print(update.message.text, "$$$$$$$$$$$$$$$$$$$$")
+            
         elif update.callback_query:
             user = update.callback_query.from_user.id
         else:

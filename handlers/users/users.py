@@ -5,11 +5,16 @@ from loader import dp,db
 from aiogram.dispatcher import FSMContext
 from aiogram.types import ReplyKeyboardRemove
 from keyboards.default import menu
+import datetime
 
 @dp.message_handler(text="Test ishlash")
 async def start_test(message:types.Message, state : FSMContext):
-    await message.answer("Enter special code:")
-    await state.set_state("Code")
+    count_ref = await db.count_ref(user_id=str(message.from_user.id))
+    if count_ref.get('count')>=1:
+        await message.answer("Enter special code:")
+        await state.set_state("Code")
+    else:
+        await message.answer(f"Siz hali 3ta do'stingizni chaqirmadingiz!\nSizning referallaringiz soni {count_ref.get('count')}\nhttps://t.me/karimovs_olimpic_bot?start={message.from_user.id}")
 @dp.message_handler(state="Code")
 async def test_start(message:types.Message, state : FSMContext):
     data = await state.get_data()
@@ -25,11 +30,18 @@ async def test_start(message:types.Message, state : FSMContext):
                     {'code':message.text}
                     )
                 status = await db.check_status(code)
-                if status.get('status'):
+                start = status.get('time_start')
+                end = status.get('time_end')
+                time = message.date
+                
+                if start<=time<=end:
                     await message.answer("Javoblaringizni kiritng:")
                     await state.set_state("answer")
-                else:
-                    await message.answer("Test tugagan yoki endi boshlanadi kanalimizdan xabardor boling!")
+                elif time<=start:
+                    await message.answer("Test endi boshlanadi kanalimizdan xabardor boling!")
+                    await state.set_state("Code")
+                elif time>end:
+                    await message.answer("Test tugab bo'lgan!\nKeyingi testlarimizda chaqqonroq bo'ling va kanalimizdan xabardor bo'ling")
                     await state.set_state("Code")
             else:
                 await message.answer("Siz bu testni allaqachon ishlagansiz !\nIltimos keyingi testlarni kuting!")

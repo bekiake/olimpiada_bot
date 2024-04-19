@@ -45,9 +45,11 @@ async def get_true_answers(message: types.Message, state : FSMContext):
     )
     await message.answer("Enter Start Time:")
     await OlimpicsDataState.start_time.set()
+    
 
 @dp.message_handler(state=OlimpicsDataState.start_time)
 async def get_start_time(message: types.Message, state : FSMContext):
+    
     #datetime.datetime(2024, 4, 16, 15, 30, 0)
     time = message.date
     yy = int(time.strftime("%Y"))
@@ -56,17 +58,24 @@ async def get_start_time(message: types.Message, state : FSMContext):
     hh = int(message.text.split(":")[0])
     mm = int(message.text.split(":")[1])
     start_time = datetime.datetime(yy,mo,dd,hh,mm,0)
-    
-    await state.update_data(
+    if start_time<=time:
+        await message.answer('Enter correct start time (start time > current time) !')
+        await OlimpicsDataState.start_time.set()
+    else:
+        await state.update_data(
         {
             'start_time' : start_time
         }
-    )
-    await message.answer("Enter End Time:")
-    await OlimpicsDataState.end_time.set()
+        )
+        await message.answer("Enter End Time:")
+        await OlimpicsDataState.end_time.set()
+        
+    
+    
     
 @dp.message_handler(state=OlimpicsDataState.end_time)
 async def get_start_time(message: types.Message, state : FSMContext):
+    
     #datetime.datetime(2024, 4, 16, 15, 30, 0)
     time = message.date
     yy = int(time.strftime("%Y"))
@@ -75,19 +84,24 @@ async def get_start_time(message: types.Message, state : FSMContext):
     hh = int(message.text.split(":")[0])
     mm = int(message.text.split(":")[1])
     end_time = datetime.datetime(yy,mo,dd,hh,mm,0)
-    
-    await state.update_data(
-        {
-            'end_time' : end_time
-        }
-    )
     data = await state.get_data()
-    await db.add_olimpics(data.get('code'), data.get('true_answers'), data.get('start_time'), data.get('end_time'), message.date)
-    sand_timer = await message.answer("⏳",reply_markup=ReplyKeyboardRemove())
-    await asyncio.sleep(0.1)
-    await sand_timer.delete()
-    await message.answer(f"code of {data.get('code')} added succesfully !", reply_markup=admin_btn)
-    await state.finish()
+    start = data.get('start_time')
+    if start>time and end_time>start:
+        await state.update_data(
+            {
+                'end_time' : end_time
+            }
+        )
+        data = await state.get_data()
+        await db.add_olimpics(data.get('code'), data.get('true_answers'), data.get('start_time'), data.get('end_time'))
+        sand_timer = await message.answer("⏳",reply_markup=ReplyKeyboardRemove())
+        await asyncio.sleep(0.1)
+        await sand_timer.delete()
+        await message.answer(f"code of {data.get('code')} added succesfully !", reply_markup=admin_btn)
+        await state.finish()
+    else:
+        await message.answer('Enter correct end time:(end time > start time !)')
+        await OlimpicsDataState.end_time.set()
     
 @dp.message_handler(text="Last Test Results",state=None ,user_id = ADMINS)
 async def get_last_test_results(message: types.Message, state : FSMContext):
