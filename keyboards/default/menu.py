@@ -1,7 +1,14 @@
 from aiogram.types import ReplyKeyboardMarkup, KeyboardButton
 
-menu = KeyboardButton('Test ishlash ')
-kb = ReplyKeyboardMarkup(resize_keyboard=True).add(menu)
+
+kb = ReplyKeyboardMarkup(
+    keyboard=[
+        [
+        KeyboardButton(text="Test ishlash"),
+        KeyboardButton(text="My Referals")
+        ],
+    ], resize_keyboard=True
+)
 
 phone = ReplyKeyboardMarkup(
     keyboard=[

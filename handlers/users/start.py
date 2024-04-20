@@ -54,7 +54,6 @@ async def bot_start(message: types.Message, state: FSMContext):
 ##registration form
 @dp.message_handler(state = UserDataState.fish)
 async def get_fish(message: types.Message, state : FSMContext):
-    print("##########")
     fish = message.text
     await state.update_data(
         {

@@ -52,17 +52,6 @@ class Database:
         '''
         await self.execute(sql, execute = True)
     
-    async def create_table_result(self):
-        sql='''
-        CREATE TABLE IF NOT EXISTS Results (
-        id SERIAL PRIMARY KEY,
-        fish VARCHAR(255) NOT NULL,
-        telegram_id VARCHAR(255) NOT NULL,
-        answers INT,
-        code INT
-        );
-        '''
-        await self.execute(sql, execute = True)
         
     async def create_table_questions(self):
         sql = '''
@@ -71,10 +60,23 @@ class Database:
             true_answers VARCHAR(255) NOT NULL,
             code INT NOT NULL UNIQUE,
             time_start TIMESTAMP NOT NULL,
-            time_end TIMESTAMP NOT NULL
+            time_end TIMESTAMP NOT NULL,
+            status BOOLEAN DEFAULT TRUE
         );
         '''
         await self.execute(sql, execute=True)
+        
+    async def create_table_result(self):
+        sql='''
+        CREATE TABLE IF NOT EXISTS results (
+        id SERIAL PRIMARY KEY,
+        fish VARCHAR(255) NOT NULL,
+        telegram_id VARCHAR(255) NOT NULL,
+        answers INT,
+        code INT
+        );
+        '''
+        await self.execute(sql, execute = True)
     
     async def create_table_referal(self):
         sql = '''
@@ -132,19 +134,19 @@ class Database:
         return await self.execute(sql, true_answers, code, time_start, time_end, execute=True)
     async def check_status(self, code):
         sql = '''
-        SELECT time_start, time_end FROM olimpics WHERE code = $1;
+        SELECT time_start, time_end, status FROM olimpics WHERE code = $1;
         '''
         return await self.execute(sql, code, fetchrow=True)
     
     async def add_results(self, fish, telegram_id, answers, code):
         sql = '''
-        INSERT INTO Results(fish, telegram_id, answers, code) VALUES($1,$2,$3,$4) RETURNING *
+        INSERT INTO results(fish, telegram_id, answers, code) VALUES($1,$2,$3,$4) RETURNING *
         '''
         return await self.execute(sql, fish, telegram_id, answers, code, fetchrow=True)
 
     async def check_result_user(self, telegram_id, code):
         sql = '''
-        SELECT * FROM Results WHERE telegram_id = $1 AND code = $2;
+        SELECT * FROM results WHERE telegram_id = $1 AND code = $2;
         '''
         return await self.execute(sql, telegram_id, code, fetchrow=True)
     
@@ -162,9 +164,21 @@ class Database:
     
     async def update_ref_status(self,referal_user_id):
         sql = '''
-        UPDATE referals SET status=True WHERE referal_user_id=$1'''
+        UPDATE referals SET status=True WHERE referal_user_id=$1;
+        '''
         return await self.execute(sql, referal_user_id, fetchval=True)
     
+    async def get_users_result(self, code):
+        sql = '''
+        SELECT * FROM results WHERE code=$1 ORDER BY answers ASC;
+        '''
+        return await self.execute(sql, code, fetchrow=True)
+    
+    async def update_olimpic_status(self, code):
+        sql = '''
+        UPDATE olimpics SET status=False WHERE code=$1;
+        '''
+        return await self.execute(sql, code, fetchval=True)
     
 
     

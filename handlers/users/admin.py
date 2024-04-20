@@ -4,6 +4,7 @@ from aiogram import types
 from aiogram import filters
 from aiogram.dispatcher.filters.builtin  import CommandStart
 from loader import dp,db
+from aiogram.types import InlineKeyboardButton,InlineKeyboardMarkup
 from aiogram.types import ReplyKeyboardRemove
 from keyboards.default.menu import admin_btn
 from aiogram.dispatcher import FSMContext
@@ -97,7 +98,9 @@ async def get_start_time(message: types.Message, state : FSMContext):
         sand_timer = await message.answer("⏳",reply_markup=ReplyKeyboardRemove())
         await asyncio.sleep(0.1)
         await sand_timer.delete()
-        await message.answer(f"code of {data.get('code')} added succesfully !", reply_markup=admin_btn)
+        btn = InlineKeyboardMarkup(row_width=1)
+        btn.insert(InlineKeyboardButton(text=f"Testni yakunlash", callback_data=f"{data.get('code')}"))
+        await message.answer(f"code of {data.get('code')} added succesfully !\Tugatish uchun quyidagi tugmani bosing 👇", reply_markup=btn)
         await state.finish()
     else:
         await message.answer('Enter correct end time:(end time > start time !)')
