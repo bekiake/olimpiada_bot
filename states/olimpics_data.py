@@ -5,4 +5,5 @@ class OlimpicsDataState(StatesGroup):
     true_answers = State()
     start_time = State()
     end_time = State()
+    photo = State()
     

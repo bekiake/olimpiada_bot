@@ -23,7 +23,6 @@ admin_btn = ReplyKeyboardMarkup(
     keyboard=[
         [
         KeyboardButton(text='Create Test'),
-        KeyboardButton(text='Last Test Results')
         ],
     ],resize_keyboard=True
 )

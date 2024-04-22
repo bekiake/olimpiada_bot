@@ -6,11 +6,12 @@ from aiogram.dispatcher import FSMContext
 from aiogram.types import ReplyKeyboardRemove
 from keyboards.default import menu
 import datetime
+from loader import bot
 
 @dp.message_handler(text="Test ishlash")
 async def start_test(message:types.Message, state : FSMContext):
     count_ref = await db.count_ref(user_id=str(message.from_user.id))
-    if count_ref.get('count')>=1:
+    if count_ref.get('count')>=0:
         await message.answer("Enter special code:")
         await state.set_state("Code")
     else:
@@ -21,6 +22,7 @@ async def test_start(message:types.Message, state : FSMContext):
     
     try:
         code = int(message.text)
+    
         check_code = await db.check_code(code=code)
         if check_code is not None:
             user = str(message.from_user.id)
@@ -34,14 +36,17 @@ async def test_start(message:types.Message, state : FSMContext):
                 end = status.get('time_end')
                 time = message.date
                 # print(status.get('status'))
-                
+                p = await db.get_olimpic_photo(code=code)
+                photo = p.get('photo')
+
                 if start<=time<=end and status.get('status'):
-                    await message.answer("Javoblaringizni kiritng:")
+                    await bot.send_photo(chat_id=message.from_user.id, photo=photo, caption='Javoblaringizni kiritng:')
                     await state.set_state("answer")
                 elif time<=start:
                     await message.answer("Test endi boshlanadi kanalimizdan xabardor boling!")
-                elif time>end:
+                elif time>end or (not status.get('status')):
                     await message.answer("Test tugab bo'lgan!\nKeyingi testlarimizda chaqqonroq bo'ling va kanalimizdan xabardor bo'ling")
+                
             else:
                 await message.answer("Siz bu testni allaqachon ishlagansiz !\nIltimos keyingi testlarni kuting!")
                 
@@ -50,10 +55,8 @@ async def test_start(message:types.Message, state : FSMContext):
             
         
     except ValueError:
-        # If the conversion fails, handle the error gracefully
-        await message.answer("Test kodini tekshiring qaytadan yuboring!")
-        await state.set_state("Code")
-    
+            await message.answer("Test kodini tekshiring va qaytadan 'Test ishlash' tugmasini bosing")
+            await state.finish()
 
         
         
@@ -61,7 +64,7 @@ async def test_start(message:types.Message, state : FSMContext):
     
 @dp.message_handler(state='answer')
 async def check_test(message:types.Message, state : FSMContext):
-    answ = message.text.lower()
+    answ = message.text.lower().strip().split('\n')
     await state.update_data(
             {
                 'user_answer' : answ
@@ -78,9 +81,9 @@ async def check_test(message:types.Message, state : FSMContext):
         for i in range(len(user_answer)):
             if test_answer[i]==user_answer[i]:
                 trues += 1
-                result += f"{i+1}.{user_answer[i]} ✅\n"
+                result += f"{i+1}. {user_answer[i]} ✅\n"
             else:
-                result += f"{i+1}.{user_answer[i]} ❌\n"
+                result += f"{i+1}. {user_answer[i]} ❌\n"
         fish = message.from_user.full_name
         tg_id = str(message.from_user.id)
         answers = trues

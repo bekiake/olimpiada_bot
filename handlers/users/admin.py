@@ -24,21 +24,33 @@ async def get_olimpics_code(message: types.Message, state : FSMContext):
     if exists_code:
         await message.answer("This code is already used !\nTry another code:")
         await OlimpicsDataState.code.set()
-    code = int(message.text)
+    else:
+        code = int(message.text)
     
+        await state.update_data(
+            {
+                'code' : code
+            }
+        )
+        
+        await message.answer("Enter Photo questions:")
+        await OlimpicsDataState.photo.set()
+
+@dp.message_handler(state = OlimpicsDataState.photo, content_types=types.ContentType.PHOTO)
+async def get_photo_olimpcs(message: types.Message, state : FSMContext):
+    photo = message.photo[-1].file_id
     await state.update_data(
         {
-            'code' : code
+            'photo' : photo
         }
     )
-    
     await message.answer("Enter True Answers:")
     await OlimpicsDataState.true_answers.set()
 
 @dp.message_handler(state = OlimpicsDataState.true_answers)
 async def get_true_answers(message: types.Message, state : FSMContext):
     
-    true_answers = message.text
+    true_answers = message.text.strip().split('\n')
     await state.update_data(
         {
             'true_answers' : true_answers
@@ -94,41 +106,41 @@ async def get_start_time(message: types.Message, state : FSMContext):
             }
         )
         data = await state.get_data()
-        await db.add_olimpics(data.get('code'), data.get('true_answers'), data.get('start_time'), data.get('end_time'))
+        await db.add_olimpics(data.get('code'), data.get('true_answers'), data.get('start_time'), data.get('end_time'), data.get('photo'))
         sand_timer = await message.answer("⏳",reply_markup=ReplyKeyboardRemove())
         await asyncio.sleep(0.1)
         await sand_timer.delete()
         btn = InlineKeyboardMarkup(row_width=1)
         btn.insert(InlineKeyboardButton(text=f"Testni yakunlash", callback_data=f"{data.get('code')}"))
-        await message.answer(f"code of {data.get('code')} added succesfully !\Tugatish uchun quyidagi tugmani bosing 👇", reply_markup=btn)
+        await message.answer(f"<b>code of {data.get('code')} added succesfully !</b>\nTugatish uchun quyidagi tugmani bosing ",parse_mode='HTML', reply_markup=btn)
         await state.finish()
     else:
         await message.answer('Enter correct end time:(end time > start time !)')
         await OlimpicsDataState.end_time.set()
     
-@dp.message_handler(text="Last Test Results",state=None ,user_id = ADMINS)
-async def get_last_test_results(message: types.Message, state : FSMContext):
-    await message.answer("code")
-    await state.set_state("Test_kodi")
-@dp.message_handler(state="Test_kodi")
-async def test(message: types.Message, state : FSMContext):
+# @dp.message_handler(text="Last Test Results",state=None ,user_id = ADMINS)
+# async def get_last_test_results(message: types.Message, state : FSMContext):
+#     await message.answer("code")
+#     await state.set_state("Test_kodi")
+# @dp.message_handler(state="Test_kodi")
+# async def test(message: types.Message, state : FSMContext):
     
     
     
-    try:
-        # Attempt to convert the message text to an integer
-        code = int(message.text)
-        print(code)
-        true_answer = await db.get_true_answers(code)
-        print(true_answer)
-        answer = true_answer.get('true_answers')
-        print(answer)
+#     try:
+#         # Attempt to convert the message text to an integer
+#         code = int(message.text)
+#         print(code)
+#         true_answer = await db.get_true_answers(code)
+#         print(true_answer)
+#         answer = true_answer.get('true_answers')
+#         print(answer)
         
-        # If successful, proceed with the logic for retrieving last test results
-        # Your logic here...
+#         # If successful, proceed with the logic for retrieving last test results
+#         # Your logic here...
         
-    except ValueError:
-        # If the conversion fails, handle the error gracefully
-        await message.answer("Please provide a valid code as an integer.")
-    # true_answer = await db.get_true_answers(code)
+#     except ValueError:
+#         # If the conversion fails, handle the error gracefully
+#         await message.answer("Please provide a valid code as an integer.")
+#     # true_answer = await db.get_true_answers(code)
     # print(true_answer)
