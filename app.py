@@ -15,7 +15,7 @@ async def on_startup(dispatcher):
     await db.create_table_questions()
     await db.create_table_result()
     # Bot ishga tushgani haqida adminga xabar berish
-    await on_startup_notify(dispatcher)
+    # await on_startup_notify(dispatcher)
 
 
 if __name__ == '__main__':
