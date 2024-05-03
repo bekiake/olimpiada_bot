@@ -12,8 +12,8 @@ from loader import bot
 @dp.message_handler(text="Test ishlash")
 async def start_test(message:types.Message, state : FSMContext):
     count_ref = await db.count_ref(user_id=str(message.from_user.id))
-    if count_ref.get('count')>=0:
-        await message.answer("Enter special code:")
+    if count_ref.get('count')>=3:
+        await message.answer("<b>Maxsus kodni kiriting(Special code):</b>", parse_mode='HTML')
         await state.set_state("Code")
     else:
         await message.answer(f"Siz hali 3ta do'stingizni chaqirmadingiz!\nSizning referallaringiz soni {count_ref.get('count')}\n\n Do'stlarga ulashish uchun:\n<code>https://t.me/karimovs_olimpic_bot?start={message.from_user.id}</code>", reply_markup=types.InlineKeyboardMarkup(row_width=1).add(types.InlineKeyboardButton("Ulashish ♻️", url=f"https://t.me/share/url?url=https://t.me/karimovs_olimpic_bot?start={message.from_user.id}")))
@@ -100,7 +100,7 @@ async def check_test(message:types.Message, state : FSMContext):
     await state.finish()
             
 
-@dp.message_handler(text="My Referals")
+@dp.message_handler(text="Mening Referallarim")
 async def get_user_referals(message:types.Message):
     count_ref = await db.count_ref(user_id=str(message.from_user.id))
     await message.answer(f"Sizning referallaringiz soni: <b>{count_ref.get('count')}</b>\nDo'stlarga ulashish uchun:\n\n<code>https://t.me/karimovs_olimpic_bot?start={message.from_user.id}</code>",parse_mode='HTML' ,reply_markup=types.InlineKeyboardMarkup(row_width=1).add(types.InlineKeyboardButton("Ulashish ♻️", url=f"https://t.me/share/url?url=https://t.me/karimovs_olimpic_bot?start={message.from_user.id}")))

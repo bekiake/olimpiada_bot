@@ -94,7 +94,7 @@ async def check_subs(query: types.CallbackQuery, state: FSMContext):
     
     if is_member:
         await db.update_ref_status(str(query.from_user.id))
-        await query.message.edit_text('Thank you for subscribing to all required channels.')
+        await query.message.edit_text("Barcha kanallarimizga obuna bo'lganingiz uchun tashakkur.")
         if await db.cheak_user(str(query.from_user.id)):
             a = await query.message.answer(f"Botimizga xush kelibsiz! Test ishlash uchun 3ta do'stingizni chaqiring\nSizning referalingiz:\nhttps://t.me/karimovs_olimpic_bot?start={user_id}",reply_markup=kb)
         else:

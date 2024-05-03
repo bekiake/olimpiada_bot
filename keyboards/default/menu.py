@@ -5,7 +5,7 @@ kb = ReplyKeyboardMarkup(
     keyboard=[
         [
         KeyboardButton(text="Test ishlash"),
-        KeyboardButton(text="My Referals")
+        KeyboardButton(text="Mening Referallarim")
         ],
     ], resize_keyboard=True
 )
