@@ -33,7 +33,7 @@ async def bot_start(message: types.Message, state: FSMContext):
     if user and (user[0]['telegram_id'] in ADMINS):
         await message.answer(f"Salom {message.from_user.full_name}", reply_markup=admin_btn)
     elif user:
-        await message.answer(f"salom", reply_markup=kb)
+        await message.answer(f"Salom {message.from_user.full_name}", reply_markup=kb)
     else:
         await message.answer(f"Salom {message.from_user.full_name}\n Ism familiyangizni kiriting:")
         # await state.set_state("fish")

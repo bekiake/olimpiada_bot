@@ -120,7 +120,7 @@ async def get_start_time(message: types.Message, state : FSMContext):
         btn = InlineKeyboardMarkup(row_width=1)
         btn.insert(InlineKeyboardButton(text=f"Testni yakunlash", callback_data=f"{data.get('code')}"))
         await message.answer(f"<b>code of {data.get('code')} added succesfully !</b>\nTugatish uchun quyidagi tugmani bosing ",parse_mode='HTML', reply_markup=btn)
-        await bot.send_message(chat_id=-1001899013345,text=f"🏆<b>Code of {data.get('code')} Olimpic started!</b>\n\n<b>Start time: {data.get('start_time')}</b>\n<b>End time: {data.get('end_time')}</b>\n\n<b>Example for answers:</b>\n<code>a\napple\n2024\netc..</code>", parse_mode='HTML', reply_markup=start_test)
+        await bot.send_message(chat_id=-1001899013345,text=f"🏆<b>Code of {data.get('code')} Olimpic started!</b>\n\n<b>Start time: {data.get('start_time')}</b>\n<b>End time: {data.get('end_time')}</b>\n\n<b>Example for answers:</b>\n<code>1.a\n2.apple\n3.2024\n...</code>\n<code>1.A\n2.Apple\n3.2024\n...</code>\n<code>1.A\n2.APPLE\n3.2024\n...</code>\n<code>a\napple\n2024\netc..</code>\n<code>A\nApple\n2024\netc..</code>", parse_mode='HTML', reply_markup=start_test)
         await state.finish()
     else:
         await message.answer('Enter correct end time:(end time > start time !)')
