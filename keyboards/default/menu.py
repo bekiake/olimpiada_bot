@@ -1,4 +1,4 @@
-from aiogram.types import ReplyKeyboardMarkup, KeyboardButton
+from aiogram.types import ReplyKeyboardMarkup, KeyboardButton, InlineKeyboardMarkup,InlineKeyboardButton
 
 
 kb = ReplyKeyboardMarkup(
@@ -26,3 +26,6 @@ admin_btn = ReplyKeyboardMarkup(
         ],
     ],resize_keyboard=True
 )
+
+start_test = InlineKeyboardMarkup(row_width=1)
+start_test.insert(InlineKeyboardButton(text="🏆Start Test", url=f"https://t.me/karimovs_olimpic_bot?start"))

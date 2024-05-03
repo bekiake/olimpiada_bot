@@ -16,7 +16,7 @@ channel = int(CHANNEL[0])
 async def bot_start(message: types.Message, state: FSMContext):
     user = await db.cheak_user(str(message.from_user.id))    
     ref_id = str(message.text[7:])
-    print(ref_id, "################")
+    # print(ref_id, "################")
     if len(ref_id) != 0:
         if user:
             await message.answer("Siz oldinroq ro'yxatdan o'tgansiz!", reply_markup=kb)

@@ -1,3 +1,4 @@
+import re
 from aiogram import types
 from aiogram.dispatcher.filters.builtin import CommandStart
 from states.user_data import UserDataState
@@ -15,7 +16,7 @@ async def start_test(message:types.Message, state : FSMContext):
         await message.answer("Enter special code:")
         await state.set_state("Code")
     else:
-        await message.answer(f"Siz hali 3ta do'stingizni chaqirmadingiz!\nSizning referallaringiz soni {count_ref.get('count')}\nhttps://t.me/karimovs_olimpic_bot?start={message.from_user.id}")
+        await message.answer(f"Siz hali 3ta do'stingizni chaqirmadingiz!\nSizning referallaringiz soni {count_ref.get('count')}\n\n Do'stlarga ulashish uchun:\n<code>https://t.me/karimovs_olimpic_bot?start={message.from_user.id}</code>", reply_markup=types.InlineKeyboardMarkup(row_width=1).add(types.InlineKeyboardButton("Ulashish ♻️", url=f"https://t.me/share/url?url=https://t.me/karimovs_olimpic_bot?start={message.from_user.id}")))
 @dp.message_handler(state="Code")
 async def test_start(message:types.Message, state : FSMContext):
     data = await state.get_data()
@@ -38,9 +39,9 @@ async def test_start(message:types.Message, state : FSMContext):
                 # print(status.get('status'))
                 p = await db.get_olimpic_photo(code=code)
                 photo = p.get('photo')
-
+                # print(photo)
                 if start<=time<=end and status.get('status'):
-                    await bot.send_photo(chat_id=message.from_user.id, photo=photo, caption='Javoblaringizni kiritng:')
+                    await bot.send_document(chat_id=message.from_user.id, document=photo, caption='<b>Javoblaringizni kiritng:</b>', parse_mode='HTML')
                     await state.set_state("answer")
                 elif time<=start:
                     await message.answer("Test endi boshlanadi kanalimizdan xabardor boling!")
@@ -64,7 +65,9 @@ async def test_start(message:types.Message, state : FSMContext):
     
 @dp.message_handler(state='answer')
 async def check_test(message:types.Message, state : FSMContext):
-    answ = message.text.lower().strip().split('\n')
+    correct = message.text.lower().strip().split('\n')
+    answ = [re.sub('^\d+\.?', '', item) for item in correct]
+    # print(answ)
     await state.update_data(
             {
                 'user_answer' : answ
@@ -100,4 +103,5 @@ async def check_test(message:types.Message, state : FSMContext):
 @dp.message_handler(text="My Referals")
 async def get_user_referals(message:types.Message):
     count_ref = await db.count_ref(user_id=str(message.from_user.id))
-    await message.answer(f"Sizning referallaringiz soni : {count_ref.get('count')}\nDo'stlarni taklif qilish uchun :\nhttps://t.me/karimovs_olimpic_bot?start={message.from_user.id}")
+    await message.answer(f"Sizning referallaringiz soni: <b>{count_ref.get('count')}</b>\nDo'stlarga ulashish uchun:\n\n<code>https://t.me/karimovs_olimpic_bot?start={message.from_user.id}</code>",parse_mode='HTML' ,reply_markup=types.InlineKeyboardMarkup(row_width=1).add(types.InlineKeyboardButton("Ulashish ♻️", url=f"https://t.me/share/url?url=https://t.me/karimovs_olimpic_bot?start={message.from_user.id}")))
+    

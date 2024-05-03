@@ -1,12 +1,13 @@
 import asyncio
 import datetime
+import re
 from aiogram import types
 from aiogram import filters
 from aiogram.dispatcher.filters.builtin  import CommandStart
 from loader import dp,db
 from aiogram.types import InlineKeyboardButton,InlineKeyboardMarkup
 from aiogram.types import ReplyKeyboardRemove
-from keyboards.default.menu import admin_btn
+from keyboards.default.menu import admin_btn,start_test
 from aiogram.dispatcher import FSMContext
 from data.config import ADMINS
 from loader import bot
@@ -33,15 +34,16 @@ async def get_olimpics_code(message: types.Message, state : FSMContext):
             }
         )
         
-        await message.answer("Enter Photo questions:")
+        await message.answer("Enter File questions:")
         await OlimpicsDataState.photo.set()
 
-@dp.message_handler(state = OlimpicsDataState.photo, content_types=types.ContentType.PHOTO)
+@dp.message_handler(state = OlimpicsDataState.photo, content_types=types.ContentType.DOCUMENT)
 async def get_photo_olimpcs(message: types.Message, state : FSMContext):
-    photo = message.photo[-1].file_id
+    document = message.document.file_id
+    
     await state.update_data(
         {
-            'photo' : photo
+            'document' : document
         }
     )
     await message.answer("Enter True Answers:")
@@ -49,8 +51,10 @@ async def get_photo_olimpcs(message: types.Message, state : FSMContext):
 
 @dp.message_handler(state = OlimpicsDataState.true_answers)
 async def get_true_answers(message: types.Message, state : FSMContext):
-    
-    true_answers = message.text.strip().split('\n')
+    answers = []
+    answers = message.text.lower().strip().split('\n') 
+    true_answers = [re.sub('^\d+\.?', '', item) for item in answers]
+    # print(true_answers)
     await state.update_data(
         {
             'true_answers' : true_answers
@@ -105,14 +109,18 @@ async def get_start_time(message: types.Message, state : FSMContext):
                 'end_time' : end_time
             }
         )
+        end = data.get('end_time')
+        start = data.get('start_time')
+        
         data = await state.get_data()
-        await db.add_olimpics(data.get('code'), data.get('true_answers'), data.get('start_time'), data.get('end_time'), data.get('photo'))
+        await db.add_olimpics(data.get('code'), data.get('true_answers'), data.get('start_time'), data.get('end_time'), data.get('document'))
         sand_timer = await message.answer("⏳",reply_markup=ReplyKeyboardRemove())
         await asyncio.sleep(0.1)
         await sand_timer.delete()
         btn = InlineKeyboardMarkup(row_width=1)
         btn.insert(InlineKeyboardButton(text=f"Testni yakunlash", callback_data=f"{data.get('code')}"))
         await message.answer(f"<b>code of {data.get('code')} added succesfully !</b>\nTugatish uchun quyidagi tugmani bosing ",parse_mode='HTML', reply_markup=btn)
+        await bot.send_message(chat_id=-1001899013345,text=f"🏆<b>Code of {data.get('code')} Olimpic started!</b>\n\n<b>Start time: {data.get('start_time')}</b>\n<b>End time: {data.get('end_time')}</b>\n\n<b>Example for answers:</b>\n<code>a\napple\n2024\netc..</code>", parse_mode='HTML', reply_markup=start_test)
         await state.finish()
     else:
         await message.answer('Enter correct end time:(end time > start time !)')
