@@ -21,7 +21,7 @@ async def start_test(message:types.Message, state : FSMContext):
 async def test_start(message:types.Message, state : FSMContext):
     data = await state.get_data()
     
-    try:
+    if message.text.isdigit():
         code = int(message.text)
     
         check_code = await db.check_code(code=code)
@@ -45,17 +45,19 @@ async def test_start(message:types.Message, state : FSMContext):
                     await state.set_state("answer")
                 elif time<=start:
                     await message.answer("Test endi boshlanadi kanalimizdan xabardor boling!")
+                    await state.finish()
                 elif time>end or (not status.get('status')):
                     await message.answer("Test tugab bo'lgan!\nKeyingi testlarimizda chaqqonroq bo'ling va kanalimizdan xabardor bo'ling")
-                
+                    await state.finish()
             else:
                 await message.answer("Siz bu testni allaqachon ishlagansiz !\nIltimos keyingi testlarni kuting!")
-                
+                await state.finish()
         else:
             await message.answer("Bu raqamli test mavjud emas!")
+            await state.finish()
             
         
-    except ValueError:
+    else:
             await message.answer("Test kodini tekshiring va qaytadan 'Test ishlash' tugmasini bosing")
             await state.finish()
 

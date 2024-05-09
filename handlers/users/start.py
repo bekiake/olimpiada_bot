@@ -14,7 +14,11 @@ from utils.misc.check_member import check
 channel = int(CHANNEL[0])
 @dp.message_handler(CommandStart())
 async def bot_start(message: types.Message, state: FSMContext):
-    user = await db.cheak_user(str(message.from_user.id))    
+    user_id_telegram = message.from_user.id
+    if user_id_telegram in ADMINS:
+        await message.answer(f"Salom {message.from_user.full_name}", reply_markup=admin_btn)
+
+    user = await db.cheak_user(str(message.from_user.id))
     ref_id = str(message.text[7:])
     # print(ref_id, "################")
     if len(ref_id) != 0:
@@ -29,7 +33,6 @@ async def bot_start(message: types.Message, state: FSMContext):
             await message.answer(f"Salom {message.from_user.full_name}\n Ism familiyangizni kiriting:")
             # await state.set_state("fish")
             await UserDataState.fish.set()
-    
     if user and (user[0]['telegram_id'] in ADMINS):
         await message.answer(f"Salom {message.from_user.full_name}", reply_markup=admin_btn)
     elif user:
